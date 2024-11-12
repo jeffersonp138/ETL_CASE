@@ -14,7 +14,7 @@ options.add_argument("blink-settings=imagesEnabled=false")
 
 driver = webdriver.Chrome(service=Service("./chromedriver.exe"), options=options)
 driver.get("https://steamdb.info/sales/")
-time.sleep(16)
+time.sleep(30)
 
 def extrair_dados():
     produtos = []
@@ -31,15 +31,12 @@ def extrair_dados():
         ranking = linha.find_elements(By.CSS_SELECTOR, "td.dt-type-numeric")[3].text  # Ranking
         release = linha.find_elements(By.CSS_SELECTOR, "td.dt-type-numeric")[4].text # Release
         
-        ends_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "td.timeago.dt-type-numeric"))
+        time_elements = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "td.timeago.dt-type-numeric"))
         )
-        ends = ends_element.get_attribute("title")
-            
-        started_element = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "td.timeago.dt-type-numeric"))
-        )
-        started = started_element.get_attribute("title")
+
+        ends = time_elements[0].text  # Primeiro elemento "timeago" (ends)
+        started = time_elements[1].text 
 
 
         produto = {
@@ -64,7 +61,7 @@ todos_produtos = []
 def salvar_em_csv(produtos):
     with open('steam_sales.csv', mode='w', newline='', encoding='utf-8') as file:
         fieldnames = ["Nome", "Desconto", "Preco", "Ranking", "Release", "Ends", "Started"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=',')
+        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=';')
 
         writer.writeheader()  # Escreve o cabeçalho
 
